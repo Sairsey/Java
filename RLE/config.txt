@@ -1,0 +1,4 @@
+IN_FILENAME = a.txt
+OUT_FILENAME = b.rle
+BUFFER_SIZE = 4096
+MODE = compress
