@@ -10,6 +10,8 @@ public class Config {
         IN_FILENAME("IN_FILENAME"),
         OUT_FILENAME("OUT_FILENAME"),
         BUFFER_SIZE("BUFFER_SIZE"),
+        MAX_SAME_AMOUNT("MAX_SAME_AMOUNT"),
+        MIN_NOT_SAME_AMOUNT("MIN_NOT_SAME_AMOUNT"),
         MODE("MODE");
 
         private String configString;
@@ -17,27 +19,6 @@ public class Config {
             this.configString = configString;
         }
         public String asString(){ return configString;}
-    }
-
-    enum Mode {
-        UNKNOWN("UNKNOWN"),
-        COMPRESS("COMPRESS"),
-        DECOMPRESS("DECOMPRESS");
-
-        private String configString;
-        Mode(String configString){
-            this.configString = configString;
-        }
-        public String asString(){ return configString;}
-
-        static Mode ToEnum(String str) {
-            if (str.equalsIgnoreCase(COMPRESS.asString()))
-                return COMPRESS;
-            else if (str.equalsIgnoreCase(DECOMPRESS.asString()))
-                return DECOMPRESS;
-            else
-                return UNKNOWN;
-        }
     }
 
     final private String SEPARATING_STRING = " = ";
@@ -48,10 +29,6 @@ public class Config {
         // default variables
         HashMap<String, String> defaultHashMap = new HashMap<String, String>();
         this.correct_config = true;
-        String inName = "undefined";
-        String outName = "undefined";
-        int bufferSize = 0;
-        Mode mode = null;
 
         // load config
         File file = new File(filename);
