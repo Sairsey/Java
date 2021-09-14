@@ -5,13 +5,14 @@ import java.util.Scanner;
 
 public class Config {
 
-    public enum ConfigFields
-    {
+    public enum ConfigFields {
         IN_FILENAME("IN_FILENAME"),
         OUT_FILENAME("OUT_FILENAME"),
-        BUFFER_SIZE("BUFFER_SIZE"),
-        MAX_SAME_AMOUNT("MAX_SAME_AMOUNT"),
-        MIN_NOT_SAME_AMOUNT("MIN_NOT_SAME_AMOUNT"),
+        IN_BUFFER_SIZE("IN_BUFFER_SIZE"),
+        OUT_BUFFER_SIZE("OUT_BUFFER_SIZE"),
+        MAX_AMOUNT_TO_COMPRESS("MAX_AMOUNT_TO_COMPRESS"),
+        MIN_AMOUNT_TO_COMPRESS("MIN_AMOUNT_TO_COMPRESS"),
+        MAX_UNCOMPRESSED_BLOCK_SIZE("MAX_UNCOMPRESSED_BLOCK_SIZE"),
         MODE("MODE");
 
         private String configString;
@@ -21,14 +22,14 @@ public class Config {
         public String asString(){ return configString;}
     }
 
-    final private String SEPARATING_STRING = " = ";
+    final static private String SEPARATING_STRING = " = ";
     final private HashMap<String, String> LOADED_DATA;
-    public boolean correct_config;
+    public boolean correctConfig;
 
     public Config(String filename) {
         // default variables
         HashMap<String, String> defaultHashMap = new HashMap<String, String>();
-        this.correct_config = true;
+        this.correctConfig = true;
 
         // load config
         File file = new File(filename);
@@ -40,17 +41,17 @@ public class Config {
         catch (FileNotFoundException ex)
         {
             System.out.println("Cannot open file");
-            this.correct_config = false;
+            this.correctConfig = false;
         }
 
         // Read file
-        while (this.correct_config && scanner.hasNext()) {
+        while (this.correctConfig && scanner.hasNext()) {
             line = scanner.nextLine();
 
             String[] pair = line.split(SEPARATING_STRING);
             if (pair.length != 2) {
                 System.out.println("Incorrect line (double =)");
-                this.correct_config = false;
+                this.correctConfig = false;
                 break;
             }
 
@@ -60,7 +61,7 @@ public class Config {
                 if (pair[0].equalsIgnoreCase(prefix.asString())) {
                     if (defaultHashMap.containsKey(prefix.asString())) {
                         System.out.println("ERROR: prefix " + prefix.asString() + " meeted two times.");
-                        this.correct_config = false;
+                        this.correctConfig = false;
                         break;
                     }
                     defaultHashMap.put(prefix.asString(), pair[1]);
@@ -70,25 +71,24 @@ public class Config {
             }
             if (!is_line_correct) {
                 System.out.println("ERROR: unknown prefix " + pair[0]);
-                this.correct_config = false;
+                this.correctConfig = false;
                 break;
             }
 
-            if (!this.correct_config)
+            if (!this.correctConfig)
                 break;
         }
 
         if (defaultHashMap.size() != ConfigFields.values().length) {
             System.out.println("ERROR: Not enough fields");
-            this.correct_config = false;
+            this.correctConfig = false;
         }
 
         LOADED_DATA = defaultHashMap;
         scanner.close();
     }
 
-    public String GetField(ConfigFields field)
-    {
+    public String GetField(ConfigFields field) {
         return LOADED_DATA.get(field.asString());
     }
 }
