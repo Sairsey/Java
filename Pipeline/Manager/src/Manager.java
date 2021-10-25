@@ -1,9 +1,8 @@
 import com.java_polytech.pipeline_interfaces.*;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.*;
 
+import static com.java_polytech.pipeline_interfaces.RC.RC_MANAGER_INVALID_ARGUMENT;
 import static com.java_polytech.pipeline_interfaces.RC.RC_SUCCESS;
 
 public class Manager implements IConfigurable {
@@ -133,12 +132,20 @@ public class Manager implements IConfigurable {
         if (!IsInited)
             return RC_MANAGER_NOT_INITED;
 
-        return ReaderElement.run();
+        RC tmp_rc = ReaderElement.run();
+        try {
+            FileIn.close();
+            FileOut.close();
+        }
+        catch (IOException e) {
+            handleRC(new RC(RC.RCWho.MANAGER, RC.RCType.CODE_CUSTOM_ERROR, "ERROR: Manager: cannot even close files"));
+        }
+        return tmp_rc;
     }
 
     public static void main(String[] args) {
         if (args.length != 1) {
-            System.out.println("Not correct amount of arguments");
+            handleRC(RC_MANAGER_INVALID_ARGUMENT);
             return;
         }
 
