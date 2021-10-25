@@ -1,0 +1,8 @@
+IN_FILENAME = files/compressed.rle
+OUT_FILENAME = files/decompressed.bmp
+READER_NAME = com.java_polytech.pipeline.Reader
+WRITER_NAME = com.java_polytech.pipeline.Writer
+EXECUTOR_NAME = com.java_polytech.pipeline.RLEExecutor
+READER_CONFIG = configs/reader_config.txt
+WRITER_CONFIG = configs/writer_config.txt
+EXECUTOR_CONFIG = configs/executor_config.txt

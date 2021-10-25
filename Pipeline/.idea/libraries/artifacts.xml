@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="artifacts">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/Manager/artifacts" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/Reader/src" />
+      <root url="file://$PROJECT_DIR$/Executor/src" />
+    </SOURCES>
+    <jarDirectory url="file://$PROJECT_DIR$/Manager/artifacts" recursive="false" />
+  </library>
+</component>

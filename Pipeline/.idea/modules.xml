@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Executor/Executor.iml" filepath="$PROJECT_DIR$/Executor/Executor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Manager/Manager.iml" filepath="$PROJECT_DIR$/Manager/Manager.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Reader/Reader.iml" filepath="$PROJECT_DIR$/Reader/Reader.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Writer/Writer.iml" filepath="$PROJECT_DIR$/Writer/Writer.iml" />
+    </modules>
+  </component>
+</project>
