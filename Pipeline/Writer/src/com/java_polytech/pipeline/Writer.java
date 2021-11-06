@@ -1,10 +1,11 @@
 package com.java_polytech.pipeline;
 
+import com.java_polytech.config_support.SyntaxAnalyzer;
 import com.java_polytech.pipeline_interfaces.IWriter;
 import com.java_polytech.pipeline_interfaces.RC;
+import javafx.util.Pair;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
 import static com.java_polytech.pipeline_interfaces.RC.*;
@@ -19,12 +20,16 @@ public class Writer implements IWriter {
     private int filledLength = 0;
 
     public RC setConfig(String s) {
-        WriterConfig config = new WriterConfig();
+        SyntaxAnalyzer config = new SyntaxAnalyzer(RCWho.WRITER, new WriterConfig());
         RC code = config.process(s);
         if (code.isSuccess())
         {
             try {
-                bufferSize = Integer.parseInt(config.GetField(WriterConfig.ConfigFields.BUFFER_SIZE));
+                Pair<RC, String> val = config.GetField(WriterConfig.ConfigFields.BUFFER_SIZE.asString());
+                if (!val.getKey().isSuccess())
+                    return val.getKey();
+
+                bufferSize = Integer.parseInt(val.getValue());
             }
             catch (NumberFormatException ex) {
                 return RC_WRITER_CONFIG_SEMANTIC_ERROR;

@@ -35,6 +35,9 @@ public class RLE {
         }
     }
 
+
+    final private int byteMaxValue = 255;
+    final private int naturalMinValue = 1;
     private Config myСonfig;
     private BufferedReader inputFile;
     private BufferedWriter outputFile;
@@ -129,21 +132,21 @@ public class RLE {
         mode = Mode.ToEnum(myСonfig.GetField(Config.ConfigFields.MODE));
 
         // check if minCompressAmount is valid
-        if (minCompressAmount < 1){
+        if (minCompressAmount < naturalMinValue){
             System.out.println("ERROR minCompressAmount incorrect it must be 1 or greater");
             CloseStreams();
             return;
         }
 
         // check if maxCompressAmount is valid
-        if (maxCompressAmount < 1 || maxCompressAmount > 255) {
+        if (maxCompressAmount < naturalMinValue || maxCompressAmount > byteMaxValue) {
             System.out.println("ERROR maxCompressAmount incorrect. it must be from 2 to 255");
             CloseStreams();
             return;
         }
 
         // check if maxCompressAmount is valid
-        if (maxUncompressedAmount < 1 || maxUncompressedAmount > 255) {
+        if (maxUncompressedAmount < naturalMinValue || maxUncompressedAmount > byteMaxValue) {
             System.out.println("ERROR maxUncompressedAmount incorrect. it must be from 2 to 255");
             CloseStreams();
             return;
@@ -318,7 +321,7 @@ public class RLE {
                 return false;
             }
         }
-
+        System.out.println("SUCCESSFULLY COMPRESSED");
         return true;
     }
 
@@ -397,5 +400,6 @@ public class RLE {
         }
 
         CloseStreams();
+        System.out.println("SUCCESSFULLY DECOMPRESSED");
     }
 }

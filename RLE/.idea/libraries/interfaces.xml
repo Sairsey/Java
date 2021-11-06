@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="interfaces">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/src/interfaces.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

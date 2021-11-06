@@ -1,8 +1,10 @@
 package com.java_polytech.pipeline;
 
+import com.java_polytech.config_support.SyntaxAnalyzer;
 import com.java_polytech.pipeline_interfaces.IConsumer;
 import com.java_polytech.pipeline_interfaces.IExecutor;
 import com.java_polytech.pipeline_interfaces.RC;
+import javafx.util.Pair;
 
 import java.util.ArrayList;
 
@@ -50,6 +52,9 @@ public class RLEExecutor implements IExecutor {
     private int maxUncompressedAmount;
     private Mode mode;
 
+    final private int byteMaxValue = 255;
+    final private int naturalMinValue = 1;
+
     // compress specific variables
     ArrayList<RLEPair> currentSymbols;
     int currentUncompressedLen = 0;
@@ -57,6 +62,7 @@ public class RLEExecutor implements IExecutor {
     boolean is_compressed_data = true;
     int not_compressed_amount = 0;
     int compressed_amount = 0;
+
 
     byte[] outBuffer;
     int outBufferIndex = 0;
@@ -90,19 +96,27 @@ public class RLEExecutor implements IExecutor {
     }
 
     public RC setConfig(String s) {
-        RLEConfig config = new RLEConfig();
+        SyntaxAnalyzer config = new SyntaxAnalyzer(RC.RCWho.EXECUTOR, new RLEConfig());
         RC code = config.process(s);
         if (code.isSuccess())
         {
             try {
-                minCompressAmount = Integer.parseInt(config.GetField(RLEConfig.ConfigFields.MIN_AMOUNT_TO_COMPRESS));
+                Pair<RC, String> val = config.GetField(RLEConfig.ConfigFields.MIN_AMOUNT_TO_COMPRESS.asString());
+                if (!val.getKey().isSuccess())
+                    return val.getKey();
+
+                minCompressAmount = Integer.parseInt(val.getValue());
             }
             catch (NumberFormatException ex) {
                 return new RC(RC.RCWho.EXECUTOR, RC.RCType.CODE_CONFIG_SEMANTIC_ERROR, "minCompressAmount is not a number");
             }
 
             try {
-                outBufferSize = Integer.parseInt(config.GetField(RLEConfig.ConfigFields.OUT_BUFFER_SIZE));
+                Pair<RC, String> val = config.GetField(RLEConfig.ConfigFields.OUT_BUFFER_SIZE.asString());
+                if (!val.getKey().isSuccess())
+                    return val.getKey();
+
+                outBufferSize = Integer.parseInt(val.getValue());
             }
             catch (NumberFormatException ex) {
                 return new RC(RC.RCWho.EXECUTOR, RC.RCType.CODE_CONFIG_SEMANTIC_ERROR, "outBufferSize is not a number");
@@ -112,20 +126,33 @@ public class RLEExecutor implements IExecutor {
             outBufferIndex = 0;
 
             try {
-                maxCompressAmount = Integer.parseInt(config.GetField(RLEConfig.ConfigFields.MAX_AMOUNT_TO_COMPRESS));
+                Pair<RC, String> val = config.GetField(RLEConfig.ConfigFields.MAX_AMOUNT_TO_COMPRESS.asString());
+                if (!val.getKey().isSuccess())
+                    return val.getKey();
+
+                maxCompressAmount = Integer.parseInt(val.getValue());
             }
             catch (NumberFormatException ex) {
                 return new RC(RC.RCWho.EXECUTOR, RC.RCType.CODE_CONFIG_SEMANTIC_ERROR, "maxCompressAmount is not a number");
             }
 
             try {
-                maxUncompressedAmount = Integer.parseInt(config.GetField(RLEConfig.ConfigFields.MAX_UNCOMPRESSED_BLOCK_SIZE));
+                Pair<RC, String> val = config.GetField(RLEConfig.ConfigFields.MAX_UNCOMPRESSED_BLOCK_SIZE.asString());
+                if (!val.getKey().isSuccess())
+                    return val.getKey();
+
+                maxUncompressedAmount = Integer.parseInt(val.getValue());
             }
             catch (NumberFormatException ex) {
                 return new RC(RC.RCWho.EXECUTOR, RC.RCType.CODE_CONFIG_SEMANTIC_ERROR, "maxUncompressedAmount is not a number");
             }
 
-            mode = Mode.ToEnum(config.GetField(RLEConfig.ConfigFields.MODE));
+            Pair<RC, String> val = config.GetField(RLEConfig.ConfigFields.MODE.asString());
+            if (!val.getKey().isSuccess())
+                return val.getKey();
+
+
+            mode = Mode.ToEnum(val.getValue());
 
             if (mode == Mode.UNKNOWN)
             {
@@ -133,17 +160,17 @@ public class RLEExecutor implements IExecutor {
             }
 
             // check if minCompressAmount is valid
-            if (minCompressAmount < 1){
+            if (minCompressAmount < naturalMinValue){
                 return new RC(RC.RCWho.EXECUTOR, RC.RCType.CODE_CONFIG_SEMANTIC_ERROR, "minCompressAmount incorrect it must be 1 or greater");
             }
 
             // check if maxCompressAmount is valid
-            if (maxCompressAmount < 1 || maxCompressAmount > 255) {
+            if (maxCompressAmount < naturalMinValue || maxCompressAmount > byteMaxValue) {
                 return new RC(RC.RCWho.EXECUTOR, RC.RCType.CODE_CONFIG_SEMANTIC_ERROR, "maxCompressAmount incorrect. it must be from 2 to 255");
             }
 
             // check if maxCompressAmount is valid
-            if (maxUncompressedAmount < 1 || maxUncompressedAmount > 255) {
+            if (maxUncompressedAmount < naturalMinValue || maxUncompressedAmount > byteMaxValue) {
                 return new RC(RC.RCWho.EXECUTOR, RC.RCType.CODE_CONFIG_SEMANTIC_ERROR, "maxUncompressedAmount incorrect. it must be from 2 to 255");
             }
 

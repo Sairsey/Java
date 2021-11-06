@@ -1,6 +1,11 @@
+import com.java_polytech.config_support.SyntaxAnalyzer;
 import com.java_polytech.pipeline_interfaces.*;
+import javafx.util.Pair;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import static com.java_polytech.pipeline_interfaces.RC.RC_MANAGER_INVALID_ARGUMENT;
 import static com.java_polytech.pipeline_interfaces.RC.RC_SUCCESS;
@@ -32,26 +37,35 @@ public class Manager implements IConfigurable {
 
     public RC setConfig(String var1)
     {
-        ManagerConfig config = new ManagerConfig();
+        SyntaxAnalyzer config = new SyntaxAnalyzer(RC.RCWho.MANAGER, new ManagerConfig());
         RC code = config.process(var1);
         if (code.isSuccess())
         {
             // open files
             try {
-                FileIn = new FileInputStream(config.GetField(ManagerConfig.ConfigFields.IN_FILENAME));
+                Pair<RC, String> val = config.GetField(ManagerConfig.ConfigFields.IN_FILENAME.asString());
+                if (!val.getKey().isSuccess())
+                    return val.getKey();
+                FileIn = new FileInputStream(val.getValue());
             } catch (FileNotFoundException e) {
                 return RC.RC_MANAGER_INVALID_INPUT_FILE;
             }
 
             try {
-                FileOut = new FileOutputStream(config.GetField(ManagerConfig.ConfigFields.OUT_FILENAME));
+                Pair<RC, String> val = config.GetField(ManagerConfig.ConfigFields.OUT_FILENAME.asString());
+                if (!val.getKey().isSuccess())
+                    return val.getKey();
+                FileOut = new FileOutputStream(val.getValue());
             } catch (FileNotFoundException e) {
                 return RC.RC_MANAGER_INVALID_OUTPUT_FILE;
             }
 
             // Get all classes
             try {
-                Class<?> reader = Class.forName(config.GetField(ManagerConfig.ConfigFields.READER_NAME));
+                Pair<RC, String> val = config.GetField(ManagerConfig.ConfigFields.READER_NAME.asString());
+                if (!val.getKey().isSuccess())
+                    return val.getKey();
+                Class<?> reader = Class.forName(val.getValue());
                 if (IReader.class.isAssignableFrom(reader)) {
                     ReaderElement = (IReader) reader.getDeclaredConstructor().newInstance();
                 }
@@ -64,7 +78,10 @@ public class Manager implements IConfigurable {
             }
 
             try {
-                Class<?> executor = Class.forName(config.GetField(ManagerConfig.ConfigFields.EXECUTOR_NAME));
+                Pair<RC, String> val = config.GetField(ManagerConfig.ConfigFields.EXECUTOR_NAME.asString());
+                if (!val.getKey().isSuccess())
+                    return val.getKey();
+                Class<?> executor = Class.forName(val.getValue());
                 if (IExecutor.class.isAssignableFrom(executor)) {
                     ExecutorElement = (IExecutor) executor.getDeclaredConstructor().newInstance();
                 }
@@ -77,7 +94,10 @@ public class Manager implements IConfigurable {
             }
 
             try {
-                Class<?> writer = Class.forName(config.GetField(ManagerConfig.ConfigFields.WRITER_NAME));
+                Pair<RC, String> val = config.GetField(ManagerConfig.ConfigFields.WRITER_NAME.asString());
+                if (!val.getKey().isSuccess())
+                    return val.getKey();
+                Class<?> writer = Class.forName(val.getValue());
                 if (IWriter.class.isAssignableFrom(writer)) {
                     WriterElement = (IWriter) writer.getDeclaredConstructor().newInstance();
                 }
@@ -91,15 +111,27 @@ public class Manager implements IConfigurable {
 
             // init all them
             RC tmp;
-            tmp = ReaderElement.setConfig(config.GetField(ManagerConfig.ConfigFields.READER_CONFIG));
+            Pair<RC, String> val = config.GetField(ManagerConfig.ConfigFields.READER_CONFIG.asString());
+            if (!val.getKey().isSuccess())
+                return val.getKey();
+
+            tmp = ReaderElement.setConfig(val.getValue());
             if (!tmp.isSuccess())
                 return tmp;
 
-            tmp = ExecutorElement.setConfig(config.GetField(ManagerConfig.ConfigFields.EXECUTOR_CONFIG));
+            val = config.GetField(ManagerConfig.ConfigFields.EXECUTOR_CONFIG.asString());
+            if (!val.getKey().isSuccess())
+                return val.getKey();
+
+            tmp = ExecutorElement.setConfig(val.getValue());
             if (!tmp.isSuccess())
                 return tmp;
 
-            tmp = WriterElement.setConfig(config.GetField(ManagerConfig.ConfigFields.WRITER_CONFIG));
+            val = config.GetField(ManagerConfig.ConfigFields.WRITER_CONFIG.asString());
+            if (!val.getKey().isSuccess())
+                return val.getKey();
+
+            tmp = WriterElement.setConfig(val.getValue());
             if (!tmp.isSuccess())
                 return tmp;
 

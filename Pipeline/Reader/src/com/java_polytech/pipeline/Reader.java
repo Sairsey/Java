@@ -1,8 +1,13 @@
 package com.java_polytech.pipeline;
 
-import com.java_polytech.pipeline_interfaces.*;
+import com.java_polytech.config_support.SyntaxAnalyzer;
+import com.java_polytech.pipeline_interfaces.IConsumer;
+import com.java_polytech.pipeline_interfaces.IReader;
+import com.java_polytech.pipeline_interfaces.RC;
+import javafx.util.Pair;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 
 import static com.java_polytech.pipeline_interfaces.RC.*;
 
@@ -20,12 +25,16 @@ public class Reader implements IReader {
 
 
     public RC setConfig(String s) {
-        ReaderConfig config = new ReaderConfig();
+        SyntaxAnalyzer config = new SyntaxAnalyzer(RCWho.READER, new ReaderConfig());
         RC code = config.process(s);
         if (code.isSuccess())
         {
             try {
-                bufferSize = Integer.parseInt(config.GetField(ReaderConfig.ConfigFields.BUFFER_SIZE));
+                Pair<RC, String> val = config.GetField(ReaderConfig.ConfigFields.BUFFER_SIZE.asString());
+                if (!val.getKey().isSuccess())
+                    return val.getKey();
+
+                bufferSize = Integer.parseInt(val.getValue());
             }
             catch (NumberFormatException ex) {
                 return RC_READER_CONFIG_SEMANTIC_ERROR;
