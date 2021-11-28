@@ -36,7 +36,7 @@ public class SyntaxAnalyzer {
         catch (FileNotFoundException ex)
         {
             this.correctConfig = false;
-            return RC.RC_MANAGER_CONFIG_FILE_ERROR;
+            return new RC(who, RC.RCType.CODE_CONFIG_FILE_ERROR, "Couldn't open config file.");
         }
 
         // Read file
@@ -46,7 +46,7 @@ public class SyntaxAnalyzer {
             String[] pair = line.split(myGrammar.getSeparatingString());
             if (pair.length != 2) {
                 this.correctConfig = false;
-                return RC.RC_MANAGER_CONFIG_GRAMMAR_ERROR;
+                return new RC(who, RC.RCType.CODE_CONFIG_FILE_ERROR, "Some line in config file has incorrect format");
             }
 
             boolean is_line_correct = false;
@@ -59,12 +59,12 @@ public class SyntaxAnalyzer {
             else
             {
                 this.correctConfig = false;
-                return new RC(RC.RCWho.MANAGER, RC.RCType.CODE_CONFIG_GRAMMAR_ERROR, "In config file, prefix " + pair[0] + " met two times.");
+                return new RC(who, RC.RCType.CODE_CONFIG_GRAMMAR_ERROR, "In config file, prefix " + pair[0] + " met two times.");
             }
 
             if (!is_line_correct) {
                 this.correctConfig = false;
-                return new RC(RC.RCWho.MANAGER, RC.RCType.CODE_CONFIG_GRAMMAR_ERROR, "In config file, unknown prefix " + pair[0]);
+                return new RC(who, RC.RCType.CODE_CONFIG_GRAMMAR_ERROR, "In config file, unknown prefix " + pair[0]);
             }
 
             if (!this.correctConfig)
@@ -73,7 +73,7 @@ public class SyntaxAnalyzer {
 
         if (defaultHashMap.size() != myGrammar.numberOfElements()) {
             this.correctConfig = false;
-            return new RC(RC.RCWho.MANAGER, RC.RCType.CODE_CONFIG_GRAMMAR_ERROR, "In config file, Not enough fields");
+            return new RC(who, RC.RCType.CODE_CONFIG_GRAMMAR_ERROR, "In config file, Not enough fields");
         }
 
         LOADED_DATA = defaultHashMap;
