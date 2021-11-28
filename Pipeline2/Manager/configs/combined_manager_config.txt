@@ -1,0 +1,8 @@
+IN_FILENAME = files/decompressed.bmp
+OUT_FILENAME = files/Repred.bmp
+READER_NAME = com.java_polytech.pipeline.Reader
+WRITER_NAME = com.java_polytech.pipeline.Writer
+EXECUTOR_NAME = Executor
+READER_CONFIG = configs/my_reader_config.txt
+WRITER_CONFIG = configs/my_writer_config.txt
+EXECUTOR_CONFIG = configs/repr_executor_config.txt
