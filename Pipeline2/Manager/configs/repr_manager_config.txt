@@ -1,8 +1,0 @@
-IN_FILENAME = files/decompressed.bmp
-OUT_FILENAME = files/Repred.bmp
-READER_NAME = Reader
-WRITER_NAME = Writer
-EXECUTOR_NAME = Executor
-READER_CONFIG = configs/repr_reader_config.txt
-WRITER_CONFIG = configs/repr_writer_config.txt
-EXECUTOR_CONFIG = configs/repr_executor_config.txt

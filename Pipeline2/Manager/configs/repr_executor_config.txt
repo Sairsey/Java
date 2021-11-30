@@ -1,2 +1,0 @@
-ACTION = ENCODE
-TABLE_PATH = configs/repr_substitution_table.txt

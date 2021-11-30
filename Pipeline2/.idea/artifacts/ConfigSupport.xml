@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="ConfigSupport">
+    <output-path>$PROJECT_DIR$/Manager/libs</output-path>
+    <root id="archive" name="ConfigSupport.jar">
+      <element id="module-output" name="ConfigSupport" />
+    </root>
+  </artifact>
+</component>

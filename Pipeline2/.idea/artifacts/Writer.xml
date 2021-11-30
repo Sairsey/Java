@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="Writer">
+    <output-path>$PROJECT_DIR$/Manager/libs</output-path>
+    <root id="archive" name="Writer.jar">
+      <element id="module-output" name="ConfigSupport" />
+      <element id="module-output" name="Writer" />
+    </root>
+  </artifact>
+</component>

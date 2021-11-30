@@ -1,8 +1,8 @@
-IN_FILENAME = files/compressed.rle
-OUT_FILENAME = files/decompressed.bmp
+IN_FILENAME = files/original.bmp
+OUT_FILENAME = files/transformed.bmp
 READER_NAME = com.java_polytech.pipeline.Reader
 WRITER_NAME = com.java_polytech.pipeline.Writer
-EXECUTOR_NAME = com.java_polytech.pipeline.RLEExecutor
+EXECUTORS_NAMES = com.java_polytech.pipeline.RLEExecutor, com.java_polytech.pipeline.RLEExecutor
 READER_CONFIG = configs/my_reader_config.txt
 WRITER_CONFIG = configs/my_writer_config.txt
-EXECUTOR_CONFIG = configs/my_executor_config.txt
+EXECUTORS_CONFIGS = configs/my_executor_compress_config.txt, configs/my_executor_decompress_config.txt

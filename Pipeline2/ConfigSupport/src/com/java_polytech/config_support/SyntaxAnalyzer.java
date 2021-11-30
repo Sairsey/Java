@@ -5,6 +5,8 @@ import javafx.util.Pair;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -18,12 +20,12 @@ public class SyntaxAnalyzer {
         myGrammar = grammar;
     }
 
-    private HashMap<String, String> LOADED_DATA;
+    private HashMap<String, ArrayList<String>> LOADED_DATA;
     public boolean correctConfig;
 
     public RC process(String filename) {
         // default variables
-        HashMap<String, String> defaultHashMap = new HashMap<String, String>();
+        HashMap<String, ArrayList<String>> defaultHashMap = new HashMap<String, ArrayList<String>>();
         this.correctConfig = true;
 
         // load config
@@ -36,35 +38,33 @@ public class SyntaxAnalyzer {
         catch (FileNotFoundException ex)
         {
             this.correctConfig = false;
-            return RC.RC_MANAGER_CONFIG_FILE_ERROR;
+            return new RC(who, RC.RCType.CODE_CONFIG_FILE_ERROR, "Couldn't open config file.");
         }
 
         // Read file
         while (this.correctConfig && scanner.hasNext()) {
             line = scanner.nextLine();
 
-            String[] pair = line.split(myGrammar.getSeparatingString());
+            String[] pair = line.split(myGrammar.getMappingSeparatingString());
             if (pair.length != 2) {
                 this.correctConfig = false;
-                return RC.RC_MANAGER_CONFIG_GRAMMAR_ERROR;
+                return new RC(who, RC.RCType.CODE_CONFIG_GRAMMAR_ERROR, "Some grammar error in config file.");
             }
-
-            boolean is_line_correct = false;
 
             if (myGrammar.isGrammarKey(pair[0]))
             {
-                defaultHashMap.put(pair[0], pair[1]);
-                is_line_correct = true;
+                String[] argsArray = pair[1].split(myGrammar.getArraySeparatingString());
+                if (argsArray.length == 0) {
+                    this.correctConfig = false;
+                    return new RC(who, RC.RCType.CODE_CONFIG_GRAMMAR_ERROR, "In config file, prefix " + pair[0] + " has no values");
+                }
+                ArrayList<String> array = new ArrayList<String>(Arrays.asList(argsArray));
+                defaultHashMap.put(pair[0], array);
             }
             else
             {
                 this.correctConfig = false;
-                return new RC(RC.RCWho.MANAGER, RC.RCType.CODE_CONFIG_GRAMMAR_ERROR, "In config file, prefix " + pair[0] + " met two times.");
-            }
-
-            if (!is_line_correct) {
-                this.correctConfig = false;
-                return new RC(RC.RCWho.MANAGER, RC.RCType.CODE_CONFIG_GRAMMAR_ERROR, "In config file, unknown prefix " + pair[0]);
+                return new RC(who, RC.RCType.CODE_CONFIG_GRAMMAR_ERROR, "In config file, prefix " + pair[0] + " met two times.");
             }
 
             if (!this.correctConfig)
@@ -73,7 +73,7 @@ public class SyntaxAnalyzer {
 
         if (defaultHashMap.size() != myGrammar.numberOfElements()) {
             this.correctConfig = false;
-            return new RC(RC.RCWho.MANAGER, RC.RCType.CODE_CONFIG_GRAMMAR_ERROR, "In config file, Not enough fields");
+            return new RC(who, RC.RCType.CODE_CONFIG_GRAMMAR_ERROR, "In config file, Not enough fields");
         }
 
         LOADED_DATA = defaultHashMap;
@@ -81,7 +81,7 @@ public class SyntaxAnalyzer {
         return RC.RC_SUCCESS;
     }
 
-    public Pair<RC, String> GetField(String field) {
+    public Pair<RC, ArrayList<String>> GetField(String field) {
         if (myGrammar.isGrammarKey(field))
             return new Pair(RC.RC_SUCCESS, LOADED_DATA.get(field));
         else

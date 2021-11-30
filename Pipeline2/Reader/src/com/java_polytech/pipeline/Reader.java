@@ -10,6 +10,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 
 import static com.java_polytech.pipeline_interfaces.RC.*;
 
@@ -73,11 +74,13 @@ public class Reader implements IReader {
         if (code.isSuccess())
         {
             try {
-                Pair<RC, String> val = config.GetField(ReaderConfig.ConfigFields.BUFFER_SIZE.asString());
+                Pair<RC, ArrayList<String>> val = config.GetField(ReaderConfig.ConfigFields.BUFFER_SIZE.asString());
                 if (!val.getKey().isSuccess())
                     return val.getKey();
+                if (val.getValue().size() != 1)
+                    return new RC(RCWho.READER, RCType.CODE_CUSTOM_ERROR, "BUFFER_SIZE must be 1 value, not an array");
 
-                bufferSize = Integer.parseInt(val.getValue());
+                bufferSize = Integer.parseInt(val.getValue().get(0));
             }
             catch (NumberFormatException ex) {
                 return RC_READER_CONFIG_SEMANTIC_ERROR;

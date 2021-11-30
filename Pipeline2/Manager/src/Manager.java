@@ -10,13 +10,14 @@ import java.io.IOException;
 import static com.java_polytech.pipeline_interfaces.RC.RC_MANAGER_INVALID_ARGUMENT;
 import static com.java_polytech.pipeline_interfaces.RC.RC_SUCCESS;
 
+import java.util.ArrayList;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 public class Manager implements IConfigurable {
     IReader ReaderElement;
-    IExecutor ExecutorElement;
+    ArrayList<IExecutor> ExecutorElements;
     IWriter WriterElement;
     boolean IsInited;
     FileInputStream FileIn;
@@ -38,6 +39,7 @@ public class Manager implements IConfigurable {
     public Manager()
     {
         IsInited = false;
+        ExecutorElements = new ArrayList<IExecutor>();
     }
 
     public RC setConfig(String var1)
@@ -48,29 +50,38 @@ public class Manager implements IConfigurable {
         {
             // open files
             try {
-                Pair<RC, String> val = config.GetField(ManagerConfig.ConfigFields.IN_FILENAME.asString());
+                Pair<RC, ArrayList<String>> val = config.GetField(ManagerConfig.ConfigFields.IN_FILENAME.asString());
                 if (!val.getKey().isSuccess())
                     return val.getKey();
-                FileIn = new FileInputStream(val.getValue());
+                if (val.getValue().size() != 1)
+                    return new RC(RC.RCWho.MANAGER, RC.RCType.CODE_CUSTOM_ERROR, "IN_FILENAME must be 1 value, not an array");
+
+                FileIn = new FileInputStream(val.getValue().get(0));
             } catch (FileNotFoundException e) {
                 return RC.RC_MANAGER_INVALID_INPUT_FILE;
             }
 
             try {
-                Pair<RC, String> val = config.GetField(ManagerConfig.ConfigFields.OUT_FILENAME.asString());
+                Pair<RC, ArrayList<String>> val = config.GetField(ManagerConfig.ConfigFields.OUT_FILENAME.asString());
                 if (!val.getKey().isSuccess())
                     return val.getKey();
-                FileOut = new FileOutputStream(val.getValue());
+                if (val.getValue().size() != 1)
+                    return new RC(RC.RCWho.MANAGER, RC.RCType.CODE_CUSTOM_ERROR, "OUT_FILENAME must be 1 value, not an array");
+
+                FileOut = new FileOutputStream(val.getValue().get(0));
             } catch (FileNotFoundException e) {
                 return RC.RC_MANAGER_INVALID_OUTPUT_FILE;
             }
 
             // Get all classes
             try {
-                Pair<RC, String> val = config.GetField(ManagerConfig.ConfigFields.READER_NAME.asString());
+                Pair<RC, ArrayList<String>> val = config.GetField(ManagerConfig.ConfigFields.READER_NAME.asString());
                 if (!val.getKey().isSuccess())
                     return val.getKey();
-                Class<?> reader = Class.forName(val.getValue());
+                if (val.getValue().size() != 1)
+                    return new RC(RC.RCWho.MANAGER, RC.RCType.CODE_CUSTOM_ERROR, "READER_NAME must be 1 value, not an array");
+
+                Class<?> reader = Class.forName(val.getValue().get(0));
                 if (IReader.class.isAssignableFrom(reader)) {
                     ReaderElement = (IReader) reader.getDeclaredConstructor().newInstance();
                 }
@@ -82,27 +93,33 @@ public class Manager implements IConfigurable {
                 return RC.RC_MANAGER_INVALID_READER_CLASS;
             }
 
-            try {
-                Pair<RC, String> val = config.GetField(ManagerConfig.ConfigFields.EXECUTOR_NAME.asString());
+            {
+                Pair<RC, ArrayList<String>> val = config.GetField(ManagerConfig.ConfigFields.EXECUTORS_NAMES.asString());
                 if (!val.getKey().isSuccess())
                     return val.getKey();
-                Class<?> executor = Class.forName(val.getValue());
-                if (IExecutor.class.isAssignableFrom(executor)) {
-                    ExecutorElement = (IExecutor) executor.getDeclaredConstructor().newInstance();
+
+                for (int number = 0; number < val.getValue().size(); number++) {
+                    try {
+                        Class<?> executor = Class.forName(val.getValue().get(number));
+                        if (IExecutor.class.isAssignableFrom(executor)) {
+                            ExecutorElements.add((IExecutor) executor.getDeclaredConstructor().newInstance());
+                        } else {
+                            return new RC(RC.RCWho.MANAGER, RC.RCType.CODE_CUSTOM_ERROR, "Invalid Executor number #".concat(String.valueOf(number)));
+                        }
+                    } catch (Exception e) {
+                        return new RC(RC.RCWho.MANAGER, RC.RCType.CODE_CUSTOM_ERROR, "Invalid Executor number #".concat(String.valueOf(number)));
+                    }
                 }
-                else {
-                    return RC.RC_MANAGER_INVALID_EXECUTOR_CLASS;
-                }
-            }
-            catch (Exception e) {
-                return RC.RC_MANAGER_INVALID_EXECUTOR_CLASS;
             }
 
             try {
-                Pair<RC, String> val = config.GetField(ManagerConfig.ConfigFields.WRITER_NAME.asString());
+                Pair<RC, ArrayList<String>> val = config.GetField(ManagerConfig.ConfigFields.WRITER_NAME.asString());
                 if (!val.getKey().isSuccess())
                     return val.getKey();
-                Class<?> writer = Class.forName(val.getValue());
+                if (val.getValue().size() != 1)
+                    return new RC(RC.RCWho.MANAGER, RC.RCType.CODE_CUSTOM_ERROR, "WRITER_NAME must be 1 value, not an array");
+
+                Class<?> writer = Class.forName(val.getValue().get(0));
                 if (IWriter.class.isAssignableFrom(writer)) {
                     WriterElement = (IWriter) writer.getDeclaredConstructor().newInstance();
                 }
@@ -116,27 +133,40 @@ public class Manager implements IConfigurable {
 
             // init all them
             RC tmp;
-            Pair<RC, String> val = config.GetField(ManagerConfig.ConfigFields.READER_CONFIG.asString());
+            Pair<RC, ArrayList<String>> val = config.GetField(ManagerConfig.ConfigFields.READER_CONFIG.asString());
             if (!val.getKey().isSuccess())
                 return val.getKey();
+            if (val.getValue().size() != 1)
+                return new RC(RC.RCWho.MANAGER, RC.RCType.CODE_CUSTOM_ERROR, "READER_CONFIG must be 1 value, not an array");
 
-            tmp = ReaderElement.setConfig(val.getValue());
+            tmp = ReaderElement.setConfig(val.getValue().get(0));
             if (!tmp.isSuccess())
                 return tmp;
 
-            val = config.GetField(ManagerConfig.ConfigFields.EXECUTOR_CONFIG.asString());
-            if (!val.getKey().isSuccess())
-                return val.getKey();
+            {
+                val = config.GetField(ManagerConfig.ConfigFields.EXECUTORS_CONFIGS.asString());
+                if (!val.getKey().isSuccess())
+                    return val.getKey();
 
-            tmp = ExecutorElement.setConfig(val.getValue());
-            if (!tmp.isSuccess())
-                return tmp;
+                if (val.getValue().size() != ExecutorElements.size())
+                    return new RC(RC.RCWho.MANAGER, RC.RCType.CODE_CUSTOM_ERROR, "Number of EXECUTORS_CONFIGS and EXECUTORS_NAMES does not match");
+                for (int number = 0; number < ExecutorElements.size(); number++)
+                {
+                    tmp = ExecutorElements.get(number).setConfig(val.getValue().get(number));
+                    if (!tmp.isSuccess())
+                        return tmp;
+                }
+            }
+
 
             val = config.GetField(ManagerConfig.ConfigFields.WRITER_CONFIG.asString());
             if (!val.getKey().isSuccess())
                 return val.getKey();
+            if (val.getValue().size() != 1)
+                return new RC(RC.RCWho.MANAGER, RC.RCType.CODE_CUSTOM_ERROR, "WRITER_CONFIG must be 1 value, not an array");
 
-            tmp = WriterElement.setConfig(val.getValue());
+
+            tmp = WriterElement.setConfig(val.getValue().get(0));
             if (!tmp.isSuccess())
                 return tmp;
 
@@ -146,11 +176,18 @@ public class Manager implements IConfigurable {
             if (!tmp.isSuccess())
                 return tmp;
 
-            tmp = ReaderElement.setConsumer(ExecutorElement);
+            tmp = ReaderElement.setConsumer(ExecutorElements.get(0));
             if (!tmp.isSuccess())
                 return tmp;
 
-            tmp = ExecutorElement.setConsumer(WriterElement);
+            for (int i = 0; i < ExecutorElements.size() - 1; i++)
+            {
+                tmp = ExecutorElements.get(i).setConsumer(ExecutorElements.get(i + 1));
+                if (!tmp.isSuccess())
+                    return tmp;
+            }
+
+            tmp = ExecutorElements.get(ExecutorElements.size() - 1).setConsumer(WriterElement);
             if (!tmp.isSuccess())
                 return tmp;
 
@@ -210,7 +247,9 @@ public class Manager implements IConfigurable {
         if (handleRC(manager.setConfig(args[0]))) {
             if (handleRC(manager.execute())) {
                 System.out.println("Everything succeed!");
+                return;
             }
         }
+        System.out.println("Something goes wrong! Check log.txt for more info!");
     }
 }

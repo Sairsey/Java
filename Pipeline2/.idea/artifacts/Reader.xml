@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="Reader">
+    <output-path>$PROJECT_DIR$/Manager/libs</output-path>
+    <root id="archive" name="Reader.jar">
+      <element id="module-output" name="Reader" />
+      <element id="module-output" name="ConfigSupport" />
+    </root>
+  </artifact>
+</component>

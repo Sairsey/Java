@@ -1,2 +1,0 @@
-ноя 29, 2021 1:58:18 AM Manager handleRC
-SEVERE: ERROR: MANAGER: Couldn't open manager config file.

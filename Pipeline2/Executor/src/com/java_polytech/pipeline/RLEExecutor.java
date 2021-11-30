@@ -89,22 +89,26 @@ public class RLEExecutor implements IExecutor {
         if (code.isSuccess())
         {
             try {
-                Pair<RC, String> val = config.GetField(RLEConfig.ConfigFields.MIN_AMOUNT_TO_COMPRESS.asString());
+                Pair<RC, ArrayList<String>> val = config.GetField(RLEConfig.ConfigFields.MIN_AMOUNT_TO_COMPRESS.asString());
                 if (!val.getKey().isSuccess())
                     return val.getKey();
+                if (val.getValue().size() != 1)
+                    return new RC(RCWho.EXECUTOR, RCType.CODE_CUSTOM_ERROR, "MIN_AMOUNT_TO_COMPRESS must be 1 value, not an array");
 
-                minCompressAmount = Integer.parseInt(val.getValue());
+                minCompressAmount = Integer.parseInt(val.getValue().get(0));
             }
             catch (NumberFormatException ex) {
                 return new RC(RC.RCWho.EXECUTOR, RC.RCType.CODE_CONFIG_SEMANTIC_ERROR, "minCompressAmount is not a number");
             }
 
             try {
-                Pair<RC, String> val = config.GetField(RLEConfig.ConfigFields.OUT_BUFFER_SIZE.asString());
+                Pair<RC, ArrayList<String>> val = config.GetField(RLEConfig.ConfigFields.OUT_BUFFER_SIZE.asString());
                 if (!val.getKey().isSuccess())
                     return val.getKey();
+                if (val.getValue().size() != 1)
+                    return new RC(RCWho.EXECUTOR, RCType.CODE_CUSTOM_ERROR, "OUT_BUFFER_SIZE must be 1 value, not an array");
 
-                outBufferSize = Integer.parseInt(val.getValue());
+                outBufferSize = Integer.parseInt(val.getValue().get(0));
             }
             catch (NumberFormatException ex) {
                 return new RC(RC.RCWho.EXECUTOR, RC.RCType.CODE_CONFIG_SEMANTIC_ERROR, "outBufferSize is not a number");
@@ -114,38 +118,42 @@ public class RLEExecutor implements IExecutor {
             outBufferIndex = 0;
 
             try {
-                Pair<RC, String> val = config.GetField(RLEConfig.ConfigFields.MAX_AMOUNT_TO_COMPRESS.asString());
+                Pair<RC, ArrayList<String>> val = config.GetField(RLEConfig.ConfigFields.MAX_AMOUNT_TO_COMPRESS.asString());
                 if (!val.getKey().isSuccess())
                     return val.getKey();
+                if (val.getValue().size() != 1)
+                    return new RC(RCWho.EXECUTOR, RCType.CODE_CUSTOM_ERROR, "MAX_AMOUNT_TO_COMPRESS must be 1 value, not an array");
 
-                maxCompressAmount = Integer.parseInt(val.getValue());
+                maxCompressAmount = Integer.parseInt(val.getValue().get(0));
             }
             catch (NumberFormatException ex) {
                 return new RC(RC.RCWho.EXECUTOR, RC.RCType.CODE_CONFIG_SEMANTIC_ERROR, "maxCompressAmount is not a number");
             }
 
             try {
-                Pair<RC, String> val = config.GetField(RLEConfig.ConfigFields.MAX_UNCOMPRESSED_BLOCK_SIZE.asString());
+                Pair<RC, ArrayList<String>> val = config.GetField(RLEConfig.ConfigFields.MAX_UNCOMPRESSED_BLOCK_SIZE.asString());
                 if (!val.getKey().isSuccess())
                     return val.getKey();
+                if (val.getValue().size() != 1)
+                    return new RC(RCWho.EXECUTOR, RCType.CODE_CUSTOM_ERROR, "MAX_UNCOMPRESSED_BLOCK_SIZE must be 1 value, not an array");
 
-                maxUncompressedAmount = Integer.parseInt(val.getValue());
+                maxUncompressedAmount = Integer.parseInt(val.getValue().get(0));
             }
             catch (NumberFormatException ex) {
                 return new RC(RC.RCWho.EXECUTOR, RC.RCType.CODE_CONFIG_SEMANTIC_ERROR, "maxUncompressedAmount is not a number");
             }
 
-            Pair<RC, String> val = config.GetField(RLEConfig.ConfigFields.MODE.asString());
+            Pair<RC, ArrayList<String>> val = config.GetField(RLEConfig.ConfigFields.MODE.asString());
             if (!val.getKey().isSuccess())
                 return val.getKey();
+            if (val.getValue().size() != 1)
+                return new RC(RCWho.EXECUTOR, RCType.CODE_CUSTOM_ERROR, "MODE must be 1 value, not an array");
 
 
-            mode = Mode.ToEnum(val.getValue());
+            mode = Mode.ToEnum(val.getValue().get(0));
 
             if (mode == Mode.UNKNOWN)
-            {
                 return new RC(RC.RCWho.EXECUTOR, RC.RCType.CODE_CONFIG_SEMANTIC_ERROR, "unknown MODE");
-            }
 
             // check if minCompressAmount is valid
             if (minCompressAmount < naturalMinValue){

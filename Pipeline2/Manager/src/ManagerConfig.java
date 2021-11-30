@@ -6,10 +6,10 @@ public class ManagerConfig implements IGrammar{
         OUT_FILENAME("OUT_FILENAME"),
         READER_NAME("READER_NAME"),
         WRITER_NAME("WRITER_NAME"),
-        EXECUTOR_NAME("EXECUTOR_NAME"),
+        EXECUTORS_NAMES("EXECUTORS_NAMES"),
         READER_CONFIG("READER_CONFIG"),
         WRITER_CONFIG("WRITER_CONFIG"),
-        EXECUTOR_CONFIG("EXECUTOR_CONFIG");
+        EXECUTORS_CONFIGS("EXECUTORS_CONFIGS");
 
         private String configString;
         ConfigFields(String configString){
@@ -17,10 +17,14 @@ public class ManagerConfig implements IGrammar{
         }
         public String asString(){ return configString;}
     }
-    final static private String SEPARATING_STRING = " = ";
+    final static private String MAP_SEPARATING_STRING = " = ";
+    final static private String ARRAY_SEPARATING_STRING = ", ";
 
-    public String getSeparatingString() {
-        return SEPARATING_STRING;
+    public String getMappingSeparatingString(){
+        return MAP_SEPARATING_STRING;
+    }
+    public String getArraySeparatingString() {
+        return ARRAY_SEPARATING_STRING;
     }
 
     public boolean isGrammarKey(String s) {
