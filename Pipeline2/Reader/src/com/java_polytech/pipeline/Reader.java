@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
@@ -45,10 +46,13 @@ public class Reader implements IReader {
             if (data.length == 0) {
                 return null;
             }
-            System.arraycopy(buffer,0,data, 0, readedLength);
-            String text = new String(data, StandardCharsets.UTF_8);
-            char[] chars = text.toCharArray();
-            return chars;
+            CharBuffer charBuf =
+                    ByteBuffer.wrap(data)
+                            .order(ByteOrder.BIG_ENDIAN)
+                            .asCharBuffer();
+            char[] array = new int[charBuf.remaining()];
+            charBuf.get(array);
+            return array;
         }
     }
 
