@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
@@ -92,7 +93,10 @@ public class Writer implements IWriter {
         else if (decidedType == TYPE.CHAR_ARRAY)
         {
             char chars[] = (char[])Mediator.getData();
-            bytes = new String(chars).getBytes(StandardCharsets.UTF_8);
+            ByteBuffer byteBuffer = ByteBuffer.allocate(ints.length * 2);
+            CharBuffer charBuffer = byteBuffer.asCharBuffer();
+            charBuffer.put(chars);
+            bytes = byteBuffer.array();
         }
         else if (decidedType == TYPE.INT_ARRAY)
         {
