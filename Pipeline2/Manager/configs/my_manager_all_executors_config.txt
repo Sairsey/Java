@@ -1,0 +1,8 @@
+IN_FILENAME = files/original.bmp
+OUT_FILENAME = files/transformed.bmp
+READER_NAME = com.java_polytech.pipeline.Reader
+WRITER_NAME = com.java_polytech.pipeline.Writer
+EXECUTORS_NAMES = LZW_Executor, Encoder, com.java_polytech.pipeline.RLEExecutor, com.java_polytech.pipeline.RLEExecutor, Decoder, LZW_Executor
+READER_CONFIG = configs/my_reader_config.txt
+WRITER_CONFIG = configs/my_writer_config.txt
+EXECUTORS_CONFIGS = configs/lzw_executor_encode_config.txt, configs/subst_encoder_config.txt, configs/my_executor_compress_config.txt, configs/my_executor_decompress_config.txt, configs/subst_decoder_config.txt, configs/lzw_executor_decode_config.txt

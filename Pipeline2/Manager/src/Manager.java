@@ -240,6 +240,7 @@ public class Manager implements IConfigurable {
 
         if (args.length != 1) {
             handleRC(RC_MANAGER_INVALID_ARGUMENT);
+            System.out.println("Something goes wrong! Check log.txt for more info!");
             return;
         }
 
@@ -251,5 +252,6 @@ public class Manager implements IConfigurable {
             }
         }
         System.out.println("Something goes wrong! Check log.txt for more info!");
+        return;
     }
 }

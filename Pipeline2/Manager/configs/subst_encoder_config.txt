@@ -1,0 +1,1 @@
+TABLE_PATH = configs/subst_substitution_table.txt

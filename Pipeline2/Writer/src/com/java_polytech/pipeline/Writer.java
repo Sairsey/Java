@@ -49,8 +49,10 @@ public class Writer implements IWriter {
                 return RC_WRITER_CONFIG_SEMANTIC_ERROR;
             }
 
+            if (bufferSize <= 0 || bufferSize % 4 != 0)
+                return new RC(RCWho.READER, RCType.CODE_CUSTOM_ERROR, "Invalid BUFFER_SIZE. It must be positive number and dividable by 4.");
+
             buffer = new byte[bufferSize];
-            this.bufferSize = bufferSize;
             this.filledLength = 0;
 
             IsConfigInited = true;
@@ -93,7 +95,7 @@ public class Writer implements IWriter {
         else if (decidedType == TYPE.CHAR_ARRAY)
         {
             char chars[] = (char[])Mediator.getData();
-            ByteBuffer byteBuffer = ByteBuffer.allocate(ints.length * 2);
+            ByteBuffer byteBuffer = ByteBuffer.allocate(chars.length * 2);
             CharBuffer charBuffer = byteBuffer.asCharBuffer();
             charBuffer.put(chars);
             bytes = byteBuffer.array();

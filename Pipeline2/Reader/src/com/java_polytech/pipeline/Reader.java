@@ -46,11 +46,14 @@ public class Reader implements IReader {
             if (data.length == 0) {
                 return null;
             }
+            if (bufferSize % 2 != 0)
+                return new RC(RCWho.READER, RCType.CODE_CUSTOM_ERROR, "Output type are INT_ARRAY, but amount of bytes in file are not dividable by 2.");
+            System.arraycopy(buffer,0,data, 0, readedLength);
             CharBuffer charBuf =
                     ByteBuffer.wrap(data)
                             .order(ByteOrder.BIG_ENDIAN)
                             .asCharBuffer();
-            char[] array = new int[charBuf.remaining()];
+            char[] array = new char[charBuf.remaining()];
             charBuf.get(array);
             return array;
         }
@@ -62,6 +65,9 @@ public class Reader implements IReader {
             if (data.length == 0) {
                 return null;
             }
+            if (bufferSize % 4 != 0)
+                return new RC(RCWho.READER, RCType.CODE_CUSTOM_ERROR, "Output type are INT_ARRAY, but amount of bytes in file are not dividable by 4.");
+            System.arraycopy(buffer,0,data, 0, readedLength);
             IntBuffer intBuf =
                     ByteBuffer.wrap(data)
                             .order(ByteOrder.BIG_ENDIAN)
@@ -89,6 +95,9 @@ public class Reader implements IReader {
             catch (NumberFormatException ex) {
                 return RC_READER_CONFIG_SEMANTIC_ERROR;
             }
+
+            if (bufferSize <= 0 || bufferSize % 4 != 0)
+                return new RC(RCWho.READER, RCType.CODE_CUSTOM_ERROR, "Invalid BUFFER_SIZE. It must be positive number and dividable by 4.");
 
             buffer = new byte[bufferSize];
             this.readedLength = 0;
