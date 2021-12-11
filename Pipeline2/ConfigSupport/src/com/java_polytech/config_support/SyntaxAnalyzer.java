@@ -45,19 +45,29 @@ public class SyntaxAnalyzer {
         while (this.correctConfig && scanner.hasNext()) {
             line = scanner.nextLine();
 
+            line = line.trim();
+            if (line.startsWith(myGrammar.getCommentString()))
+            {
+                // skip comments
+                continue;
+            }
+
             String[] pair = line.split(myGrammar.getMappingSeparatingString());
             if (pair.length != 2) {
                 this.correctConfig = false;
                 return new RC(who, RC.RCType.CODE_CONFIG_GRAMMAR_ERROR, "Some grammar error in config file.");
             }
-
+            pair[0] = pair[0].trim();
             if (myGrammar.isGrammarKey(pair[0]))
             {
+                pair[1] = pair[1].trim();
                 String[] argsArray = pair[1].split(myGrammar.getArraySeparatingString());
                 if (argsArray.length == 0) {
                     this.correctConfig = false;
                     return new RC(who, RC.RCType.CODE_CONFIG_GRAMMAR_ERROR, "In config file, prefix " + pair[0] + " has no values");
                 }
+                for (int i = 0; i < argsArray.length; i++)
+                    argsArray[i] = argsArray[i].trim();
                 ArrayList<String> array = new ArrayList<String>(Arrays.asList(argsArray));
                 defaultHashMap.put(pair[0], array);
             }

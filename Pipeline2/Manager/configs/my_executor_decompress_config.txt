@@ -1,5 +1,11 @@
+# !!!IMPORTANT!!! Comments are lines started with #
+# Mode. Avaliable modes are COMPRESS, DECOMPRESS
 MODE = decompress
-MIN_AMOUNT_TO_COMPRESS = 3
-MAX_AMOUNT_TO_COMPRESS = 255
-MAX_UNCOMPRESSED_BLOCK_SIZE = 255
-OUT_BUFFER_SIZE = 1024
+# Minimum amount of same bytes we must compress
+MIN_AMOUNT_TO_COMPRESS    =      3
+# Maximum amount of same bytes we must compress
+MAX_AMOUNT_TO_COMPRESS    =    255
+# Maximum amount of same bytes we decide to not compress
+MAX_UNCOMPRESSED_BLOCK_SIZE  = 255
+# Size of buffer
+OUT_BUFFER_SIZE             = 1024

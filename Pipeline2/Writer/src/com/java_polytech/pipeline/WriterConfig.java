@@ -13,15 +13,17 @@ public class WriterConfig implements IGrammar {
         public String asString(){ return configString;}
     }
 
-    final static private String MAP_SEPARATING_STRING = " = ";
-    final static private String ARRAY_SEPARATING_STRING = ", ";
+    final static private String MAP_SEPARATING_STRING = "=";
+    final static private String ARRAY_SEPARATING_STRING = ",";
+    final static private String COMMENT_STRING = "#";
 
     public String getMappingSeparatingString(){
         return MAP_SEPARATING_STRING;
     }
-    public String getArraySeparatingString() {
+    public String getArraySeparatingString(){
         return ARRAY_SEPARATING_STRING;
     }
+    public String getCommentString() {return COMMENT_STRING; }
 
     public boolean isGrammarKey(String s) {
         for (ConfigFields prefix : ConfigFields.values())

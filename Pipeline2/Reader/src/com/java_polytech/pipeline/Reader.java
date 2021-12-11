@@ -46,8 +46,6 @@ public class Reader implements IReader {
             if (data.length == 0) {
                 return null;
             }
-            if (bufferSize % 2 != 0)
-                return new RC(RCWho.READER, RCType.CODE_CUSTOM_ERROR, "Output type are INT_ARRAY, but amount of bytes in file are not dividable by 2.");
             System.arraycopy(buffer,0,data, 0, readedLength);
             CharBuffer charBuf =
                     ByteBuffer.wrap(data)
@@ -65,8 +63,6 @@ public class Reader implements IReader {
             if (data.length == 0) {
                 return null;
             }
-            if (bufferSize % 4 != 0)
-                return new RC(RCWho.READER, RCType.CODE_CUSTOM_ERROR, "Output type are INT_ARRAY, but amount of bytes in file are not dividable by 4.");
             System.arraycopy(buffer,0,data, 0, readedLength);
             IntBuffer intBuf =
                     ByteBuffer.wrap(data)
@@ -159,6 +155,7 @@ public class Reader implements IReader {
         while (readedLength > 0)
         {
             RC tmp_rc;
+
             tmp_rc = Next.consume();
             if (!tmp_rc.isSuccess()) {
                 buffer = null;
