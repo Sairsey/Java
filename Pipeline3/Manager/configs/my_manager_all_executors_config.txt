@@ -1,0 +1,19 @@
+# !!!IMPORTANT!!! Comments are lines started with #
+# Input file
+IN_FILENAME = files/original.bmp
+# Output file
+OUT_FILENAME = files/transformed.bmp
+# Canonical Reader name
+READER_NAME = com.java_polytech.pipeline.Reader
+# Canonical Writer name
+WRITER_NAME = com.java_polytech.pipeline.Writer
+# Canonical Names of all executors. Separated by symbol ','.
+# Order in this line are the order of them in Pipeline
+EXECUTORS_NAMES=com.java_polytech.pipeline.RLEExecutor,com.java_polytech.pipeline.RLEExecutor
+# Path to Reader config
+READER_CONFIG = configs/my_reader_config.txt
+# Path to Writer config
+WRITER_CONFIG = configs/my_writer_config.txt
+# Paths Names of configs for all executors. Separated by symbol ','.
+# Order in this line must be same as EXECUTOR_NAMES
+EXECUTORS_CONFIGS = configs/my_executor_compress_config.txt,configs/my_executor_decompress_config.txt
