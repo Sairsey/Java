@@ -23,12 +23,14 @@ public class Reader implements IReader {
 
     RC CurrentState = RC_SUCCESS;
 
-    private static final int END_OF_FILE_PACKET_NUMBER = -1;
+    public RC getCurrentState()
+    {
+        return CurrentState;
+    }
 
     InputStream inputStream;
 
     int bufferSize = 0;
-
     private class Buffer
     {
         byte buffer[];
@@ -43,46 +45,45 @@ public class Reader implements IReader {
             System.arraycopy(other.buffer, 0, buffer, 0, other.buffer.length);
         }
     }
-
     Buffer currentBuffer;
     long current_packet_number = 0;
-
     private HashMap<Long, Buffer> readedBuffers = new HashMap<>();
 
     private final TYPE[] supportedTypes = {TYPE.BYTE_ARRAY};
-
+    // TODO: Many Consumers Support
     IConsumer Next;
 
     class ByteArrayMediator implements IMediator {
         public Object getData(long packet_number) {
-            if (readedBuffers.containsKey(packet_number)) {
-                Buffer b = readedBuffers.get(packet_number);
-                byte[] data = new byte[b.readedLength];
-                if (b.readedLength == 0) {
-                    return null;
-                }
-                System.arraycopy(b.buffer, 0, data, 0, b.readedLength);
-                return data;
+            if (packet_number == IConsumer.END_OF_FILE_PACKET_NUMBER)
+            {
+                CurrentState = new RC(RCWho.READER, RCType.CODE_CUSTOM_ERROR, "Invalid index asked");
+                return null;
             }
-            while (packet_number < current_packet_number &&
-                    !readedBuffers.containsKey(packet_number) &&
-                    current_packet_number != END_OF_FILE_PACKET_NUMBER)
+            while (!readedBuffers.containsKey(packet_number) &&
+                    current_packet_number != IConsumer.END_OF_FILE_PACKET_NUMBER)
             {
                 try {
                     Thread.sleep(1);
                 } catch (InterruptedException ex) {}
             }
-            if (current_packet_number == END_OF_FILE_PACKET_NUMBER)
+            if (!readedBuffers.containsKey(packet_number) && current_packet_number == IConsumer.END_OF_FILE_PACKET_NUMBER) {
+                CurrentState = new RC(RCWho.READER, RCType.CODE_CUSTOM_ERROR, "Invalid index asked");
                 return null;
+            }
             if (readedBuffers.containsKey(packet_number)) {
                 Buffer b = readedBuffers.get(packet_number);
                 byte[] data = new byte[b.readedLength];
                 if (b.readedLength == 0) {
+                    CurrentState = new RC(RCWho.READER, RCType.CODE_CUSTOM_ERROR, "Something wrong with file reading");
                     return null;
                 }
                 System.arraycopy(b.buffer, 0, data, 0, b.readedLength);
+                // TODO: Many Consumers Support
+                readedBuffers.remove(packet_number);
                 return data;
             }
+            CurrentState = new RC(RCWho.READER, RCType.CODE_CUSTOM_ERROR, "Something goes wrong in Mediator");
             return null;
         }
     }
@@ -149,33 +150,40 @@ public class Reader implements IReader {
     public void run() {
         if (!IsConfigInited) {
             CurrentState = new RC(RC.RCWho.READER, RC.RCType.CODE_CUSTOM_ERROR, "No config is set");
+            Next.consume(IConsumer.END_OF_FILE_PACKET_NUMBER);
             return;
         }
 
         if (!IsConsumerInited) {
             CurrentState = new RC(RC.RCWho.READER, RC.RCType.CODE_CUSTOM_ERROR, "No consumer inited");
+            Next.consume(IConsumer.END_OF_FILE_PACKET_NUMBER);
             return;
         }
         if (!IsInputStreamInited) {
             CurrentState = new RC(RC.RCWho.READER, RC.RCType.CODE_CUSTOM_ERROR, "No input stream inited");
+            Next.consume(IConsumer.END_OF_FILE_PACKET_NUMBER);
             return;
         }
         try {
             currentBuffer.readedLength = inputStream.read(currentBuffer.buffer, 0, bufferSize);
         } catch (IOException e) {
             CurrentState = RC_READER_FAILED_TO_READ;
+            Next.consume(IConsumer.END_OF_FILE_PACKET_NUMBER);
             return;
         }
 
-        while (currentBuffer.readedLength > 0)
+        while (currentBuffer.readedLength > 0 && CurrentState.isSuccess())
         {
             RC tmp_rc;
             Buffer clone = new Buffer(currentBuffer);
             readedBuffers.put(current_packet_number, clone);
             tmp_rc = Next.consume(current_packet_number);
+            // TODO: Make more safe
+            if (current_packet_number == IConsumer.MAX_PACKET_NUMBER)
+                current_packet_number = -1;
             current_packet_number++;
             if (!tmp_rc.isSuccess()) {
-                Next.consume(END_OF_FILE_PACKET_NUMBER);
+                Next.consume(IConsumer.END_OF_FILE_PACKET_NUMBER);
                 CurrentState = tmp_rc;
                 return;
             }
@@ -183,15 +191,15 @@ public class Reader implements IReader {
             try {
                 currentBuffer.readedLength = inputStream.read(currentBuffer.buffer, 0, bufferSize);
             } catch (IOException e) {
+                Next.consume(IConsumer.END_OF_FILE_PACKET_NUMBER);
                 CurrentState = RC_READER_FAILED_TO_READ;
                 return;
             }
         }
 
-        currentBuffer.readedLength = 0;
-        Next.consume(END_OF_FILE_PACKET_NUMBER);
+        current_packet_number = IConsumer.END_OF_FILE_PACKET_NUMBER;
+        Next.consume(current_packet_number);
 
-        CurrentState = RC_SUCCESS;
         return;
     }
 }

@@ -27,6 +27,9 @@ public class Writer implements IWriter {
     private TYPE decidedType;
 
     RC CurrentState = RC_SUCCESS;
+    public RC getCurrentState() {
+        return CurrentState;
+    }
 
     IProvider Prev;
     IMediator Mediator;
@@ -109,7 +112,7 @@ public class Writer implements IWriter {
         }
 
         long current_packet = avaliablePackets.removeFirst();
-        while (current_packet != -1) {
+        while (current_packet != -1 && CurrentState.isSuccess()) {
             byte bytes[] = null;
 
             if (decidedType == TYPE.BYTE_ARRAY)
@@ -165,7 +168,7 @@ public class Writer implements IWriter {
             }
             current_packet = avaliablePackets.removeFirst();
         }
-        if (filledLength != 0) {
+        if (filledLength != 0 && CurrentState.isSuccess()) {
             try {
                 outputStream.write(buffer, 0, filledLength);
             } catch (IOException e) {
@@ -173,8 +176,6 @@ public class Writer implements IWriter {
                 return;
             }
         }
-
-        CurrentState = RC_SUCCESS;
         return;
     }
 

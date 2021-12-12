@@ -201,10 +201,12 @@ public class Manager implements IConfigurable {
         return code;
     }
 
-    public RC execute()
+    public boolean execute()
     {
-        if (!IsInited)
-            return RC_MANAGER_NOT_INITED;
+        if (!IsInited) {
+            handleRC(RC_MANAGER_NOT_INITED);
+            return false;
+        }
         Thread[] ExecutorThreads = new Thread[ExecutorElements.size()];
         Thread ReaderThread = new Thread (ReaderElement, "Reader");
         Thread WriterThread = new Thread(WriterElement, "Writer");
@@ -232,7 +234,23 @@ public class Manager implements IConfigurable {
         catch (IOException e) {
             handleRC(new RC(RC.RCWho.MANAGER, RC.RCType.CODE_CUSTOM_ERROR, "ERROR: Manager: cannot even close files"));
         }
-        return RC_SUCCESS;
+
+        boolean isAnyError = false;
+        if (!ReaderElement.getCurrentState().isSuccess()) {
+            handleRC(ReaderElement.getCurrentState());
+            isAnyError = true;
+        }
+        for (int i = 0; i < ExecutorElements.size(); i++)
+            if (!ExecutorElements.get(i).getCurrentState().isSuccess()) {
+                handleRC(ExecutorElements.get(i).getCurrentState());
+                isAnyError = true;
+            }
+        if (!WriterElement.getCurrentState().isSuccess()) {
+            handleRC(WriterElement.getCurrentState());
+            isAnyError = true;
+        }
+
+        return !isAnyError;
     }
 
     static final String logFileName = "log.txt";
@@ -264,7 +282,7 @@ public class Manager implements IConfigurable {
 
         Manager manager = new Manager();
         if (handleRC(manager.setConfig(args[0]))) {
-            if (handleRC(manager.execute())) {
+            if (manager.execute()) {
                 System.out.println("Everything succeed!");
                 return;
             }

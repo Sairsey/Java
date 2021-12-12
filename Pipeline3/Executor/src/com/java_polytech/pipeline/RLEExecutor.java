@@ -17,11 +17,10 @@ public class RLEExecutor implements IExecutor {
     IProvider Prev;
     IMediator Mediator;
 
-    private static final int END_OF_FILE_PACKET_NUMBER = -1;
-
     private final TYPE[] supportedTypes = {TYPE.BYTE_ARRAY};
     private TYPE decidedType;
 
+    // TODO: Many Consumers Support
     IConsumer Next;
 
     enum Mode {
@@ -72,6 +71,7 @@ public class RLEExecutor implements IExecutor {
     int not_compressed_amount = 0;
     int compressed_amount = 0;
 
+    int outBufferSize = 0;
     private class Buffer
     {
         byte buffer[];
@@ -86,46 +86,49 @@ public class RLEExecutor implements IExecutor {
             System.arraycopy(other.buffer, 0, buffer, 0, other.buffer.length);
         }
     }
-
     Buffer outBuffer;
     long out_current_packet_number = 0;
-
     private HashMap<Long, Buffer> processedBuffers = new HashMap<>();
-    int outBufferSize = 0;
 
     private ArrayDeque<Long> avaliablePackets = new ArrayDeque<>();
+
     private RC CurrentState = RC_SUCCESS;
+
+    public RC getCurrentState() {
+        return CurrentState;
+    }
 
     class ByteArrayMediator implements IMediator {
         public Object getData(long packet_number) {
-            if (processedBuffers.containsKey(packet_number)) {
-                Buffer b = processedBuffers.get(packet_number);
-                byte[] data = new byte[b.readedLength];
-                if (b.readedLength == 0) {
-                    return null;
-                }
-                System.arraycopy(b.buffer, 0, data, 0, b.readedLength);
-                return data;
+            if (packet_number == IConsumer.END_OF_FILE_PACKET_NUMBER)
+            {
+                CurrentState = new RC(RCWho.EXECUTOR, RCType.CODE_CUSTOM_ERROR, "Invalid index asked");
+                return null;
             }
-            while (packet_number < out_current_packet_number &&
-                    !processedBuffers.containsKey(packet_number) &&
-                    out_current_packet_number != END_OF_FILE_PACKET_NUMBER)
+            while (!processedBuffers.containsKey(packet_number) &&
+                    out_current_packet_number != IConsumer.END_OF_FILE_PACKET_NUMBER)
             {
                 try {
                     Thread.sleep(1);
                 } catch (InterruptedException ex) {}
             }
-            if (out_current_packet_number == END_OF_FILE_PACKET_NUMBER)
+            if (!processedBuffers.containsKey(packet_number) && out_current_packet_number == IConsumer.END_OF_FILE_PACKET_NUMBER) {
+                CurrentState = new RC(RCWho.EXECUTOR, RCType.CODE_CUSTOM_ERROR, "Invalid index asked");
                 return null;
+            }
             if (processedBuffers.containsKey(packet_number)) {
                 Buffer b = processedBuffers.get(packet_number);
                 byte[] data = new byte[b.readedLength];
                 if (b.readedLength == 0) {
+                    CurrentState = new RC(RCWho.EXECUTOR, RCType.CODE_CUSTOM_ERROR, "Something wrong with file reading");
                     return null;
                 }
                 System.arraycopy(b.buffer, 0, data, 0, b.readedLength);
+                // TODO: Many Consumers Support
+                processedBuffers.remove(packet_number);
                 return data;
             }
+            CurrentState = new RC(RCWho.EXECUTOR, RCType.CODE_CUSTOM_ERROR, "Something goes wrong in Mediator");
             return null;
         }
     }
@@ -294,7 +297,7 @@ public class RLEExecutor implements IExecutor {
         }
         long current_pack = avaliablePackets.removeFirst();
 
-        while (current_pack != -1) {
+        while (current_pack != -1 && CurrentState.isSuccess()) {
             byte bytes[] = (byte[]) Mediator.getData(current_pack);
             if (bytes == null) {
 
@@ -302,7 +305,7 @@ public class RLEExecutor implements IExecutor {
                     WriteArrayAsRLE(currentSymbols, currentUncompressedLen);
 
                 CurrentState = OutBufferClose();
-                return;
+                break;
             }
 
             if (mode == Mode.COMPRESS) {
@@ -311,6 +314,7 @@ public class RLEExecutor implements IExecutor {
             else {
                 CurrentState = Decompress(bytes);
             }
+
             while (avaliablePackets.isEmpty()) {
                 try {
                     Thread.sleep(100);
@@ -320,10 +324,12 @@ public class RLEExecutor implements IExecutor {
             }
             current_pack = avaliablePackets.removeFirst();
         }
-        if (mode == Mode.COMPRESS && currentSymbols.size() != 0)
-            WriteArrayAsRLE(currentSymbols, currentUncompressedLen);
+        if (CurrentState.isSuccess()) {
+            if (mode == Mode.COMPRESS && currentSymbols.size() != 0)
+                WriteArrayAsRLE(currentSymbols, currentUncompressedLen);
 
-        CurrentState = OutBufferClose();
+            CurrentState = OutBufferClose();
+        }
         return;
     }
 
